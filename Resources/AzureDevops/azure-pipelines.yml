@@ -74,7 +74,7 @@ stages:
           - task: Tokenization@2            
             displayName: 'Tokenization: transform file mon-devops-aks-agent.yml'
             inputs:
-              SourcePath: $(Pipeline.Workspace)/DockerFiles/
+              SourcePath: $(Pipeline.Workspace)/manifests/
               TargetFileNames: mon-devops-aks-agent.yml
               
           - task: Kubernetes@1
@@ -105,7 +105,7 @@ stages:
               action: deploy
               namespace: $(k8sNamespaceForPR)
               manifests: |
-                $(Pipeline.Workspace)/DockerFiles/mon-devops-aks-agent.yml
+                $(Pipeline.Workspace)/manifests/mon-devops-aks-agent.yml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
                     
@@ -118,7 +118,7 @@ stages:
     - task: DeleteFiles@1
       displayName: 'Delete tokenised file'
       inputs:
-        SourceFolder: $(Pipeline.Workspace)/DockerFiles/
+        SourceFolder: $(Pipeline.Workspace)/manifests/
         Contents:  mon-devops-aks-agent.yml
     - task: Kubernetes@1
       name: get
