@@ -72,7 +72,7 @@ stages:
           - reviewApp: dev
           
           - task: Tokenization@2            
-            displayName: 'Tokenization: transform file akscalculator2.yml'
+            displayName: 'Tokenization: transform file mon-devops-aks-agent.yml'
             inputs:
               SourcePath: $(Pipeline.Workspace)/DockerFiles/
               TargetFileNames: mon-devops-aks-agent.yml
@@ -161,7 +161,7 @@ stages:
 - stage: DeployDEVStage
   displayName: Deploy DEV stage
   dependsOn: Build
-  condition: false # and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/pull/')))
+  condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/pull/')))
   jobs:
   - deployment: DeployDEVJob
     condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/pull/')))
@@ -175,7 +175,7 @@ stages:
           steps:    
           # Create PAT token secret
           - task: Tokenization@2            
-            displayName: 'Tokenization: transform file akscalculator2.yml'
+            displayName: 'Tokenization: transform file mon-devops-aks-agent.yml'
             inputs:
               SourcePath: $(Pipeline.Workspace)/manifests/
               TargetFileNames: akscalculator2.yml
@@ -195,7 +195,7 @@ stages:
             inputs:
               action: deploy
               manifests: |
-                $(Pipeline.Workspace)/manifests/akscalculator2.yml
+                $(Pipeline.Workspace)/manifests/mon-devops-aks-agent.yml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -203,4 +203,4 @@ stages:
             displayName: 'Delete tokenised file'
             inputs:
               SourceFolder: $(Pipeline.Workspace)/manifests/
-              Contents: akscalculator2.yml
+              Contents: mon-devops-aks-agent.yml
