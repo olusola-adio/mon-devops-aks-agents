@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mon-devops-aks-agent 
+spec:
+  replicas: 2
+  progressDeadlineSeconds: 1800
+  selector:
+    matchLabels:
+      app: mon-devops-aks-agent
+  template:
+    metadata:
+      labels:
+        app: mon-devops-aks-agent 
+    spec:
+      containers:
+        - name: mon-devops-aks-agent
+          image: mondevappsharedcr.azurecr.io/mon-devops-aks-agent:v1
+          ports:
+          - containerPort: 80
+          resources:
+            requests:
+              cpu: 400m
+              memory: "1G"
+            limits:
+              cpu: 400m
+              memory: "1G"
+          env:
+          - name: AZP_POOL
+            value: 'my-new-pool'
+          - name: AZP_TOKEN
+            valueFrom: 
+              secretKeyRef:
+                name: mon-azuredevops-pat-token
+                key: pattokensecret
+          - name: AZP_URL
+            value: __AzureDevOpsUrl__
+          securityContext:
+            allowPrivilegeEscalation: false
+          volumeMounts:
+          - name: docker-graph-storage
+            mountPath: /var/run/docker.sock
+      volumes:
+      - name: docker-graph-storage
+        hostPath:
+            path: /var/run/docker.sock
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: mon-devops-aks-agent
+spec:
+    type: LoadBalancer
+    ports:
+    - port: 80 
+    selector:
+        app: mon-devops-aks-agent
