@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: mon-devops-aks-agent
-          image: mondevappsharedcr.azurecr.io/mon-devops-aks-agent:v1
+          image: mondevappsharedcr.azurecr.io/mondevopsaksagent:v1
           ports:
           - containerPort: 80
           resources:
