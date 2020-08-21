@@ -14,7 +14,7 @@ variables:
 
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: 'DockerConnectionGitHub'
-  imageRepository: 'mondevopsaksagents'
+  imageRepository: 'mon-devops-aks-agent'
   containerRegistry: 'mondevappsharedcr.azurecr.io'
   dockerfilePath: '**/DockerFiles/Dockerfile'
   tag: '$(Build.BuildNumber)'
