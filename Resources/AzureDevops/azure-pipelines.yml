@@ -164,14 +164,14 @@ stages:
   condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/pull/')))
   jobs:
   - deployment: DeployDEVJob
+    variables:
+    - group: KeyVault - mon-dev-shared-kv
+    - template: VariableTemplates\SharedEnvironmentVariables.yml
+    - template: VariableTemplates\DevEnvironmentVariables.yml
     condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/pull/')))
     displayName: Deploy DEV Job
     pool:
       vmImage:  vs2017-win2016 
-      variables:
-      - group: KeyVault - mon-dev-shared-kv
-      - template: VariableTemplates\SharedEnvironmentVariables.yml
-      - template: VariableTemplates\DevEnvironmentVariables.yml
     environment: 'dev.dev'
     strategy:
       runOnce:
