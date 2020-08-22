@@ -14,7 +14,7 @@ variables:
 
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: 'DockerConnectionGitHub'
-  imageRepository: 'mondevopsaksagents'
+  imageRepository: 'mon-devops-aks-agent'
   containerRegistry: 'mondevappsharedcr.azurecr.io'
   dockerfilePath: '**/DockerFiles/Dockerfile'
   tag: '$(Build.BuildNumber)'
@@ -50,7 +50,7 @@ stages:
 - stage: PullRequest
   displayName: PullRequest Stage
   dependsOn: Build
-  condition: false # and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/pull/'))
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/pull/'))
 
   jobs:
 
@@ -72,9 +72,9 @@ stages:
           - reviewApp: dev
           
           - task: Tokenization@2            
-            displayName: 'Tokenization: transform file akscalculator2.yml'
+            displayName: 'Tokenization: transform file mon-devops-aks-agent.yml'
             inputs:
-              SourcePath: $(Pipeline.Workspace)/DockerFiles/
+              SourcePath: $(Pipeline.Workspace)/manifests/
               TargetFileNames: mon-devops-aks-agent.yml
               
           - task: Kubernetes@1
@@ -105,7 +105,7 @@ stages:
               action: deploy
               namespace: $(k8sNamespaceForPR)
               manifests: |
-                $(Pipeline.Workspace)/DockerFiles/mon-devops-aks-agent.yml
+                $(Pipeline.Workspace)/manifests/mon-devops-aks-agent.yml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
                     
@@ -118,7 +118,7 @@ stages:
     - task: DeleteFiles@1
       displayName: 'Delete tokenised file'
       inputs:
-        SourceFolder: $(Pipeline.Workspace)/DockerFiles/
+        SourceFolder: $(Pipeline.Workspace)/manifests/
         Contents:  mon-devops-aks-agent.yml
     - task: Kubernetes@1
       name: get
@@ -161,13 +161,13 @@ stages:
 - stage: DeployDEVStage
   displayName: Deploy DEV stage
   dependsOn: Build
-  condition: false # and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/pull/')))
+  condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/pull/')))
   jobs:
   - deployment: DeployDEVJob
     condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/pull/')))
     displayName: Deploy DEV Job
     pool:
-      vmImage: $(vmImageName)
+      vmImage:  vs2017-win2016 
     environment: 'dev.dev'
     strategy:
       runOnce:
@@ -175,10 +175,10 @@ stages:
           steps:    
           # Create PAT token secret
           - task: Tokenization@2            
-            displayName: 'Tokenization: transform file akscalculator2.yml'
+            displayName: 'Tokenization: transform file mon-devops-aks-agent.yml'
             inputs:
               SourcePath: $(Pipeline.Workspace)/manifests/
-              TargetFileNames: akscalculator2.yml
+              TargetFileNames: mon-devops-aks-agent.yml
                             
           - task: Kubernetes@1
             displayName: kubectl create pat token secret
@@ -195,7 +195,7 @@ stages:
             inputs:
               action: deploy
               manifests: |
-                $(Pipeline.Workspace)/manifests/akscalculator2.yml
+                $(Pipeline.Workspace)/manifests/mon-devops-aks-agent.yml
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
@@ -203,4 +203,20 @@ stages:
             displayName: 'Delete tokenised file'
             inputs:
               SourceFolder: $(Pipeline.Workspace)/manifests/
-              Contents: akscalculator2.yml
+              Contents: mon-devops-aks-agent.yml
+
+  - job: BashJob
+    dependsOn: DeployDEVJob
+    condition: succeeded()
+    pool:
+      name: 'my-new-pool'
+    steps:
+    - bash: 'ls -l /data'
+      displayName: 'Bash Script: Run jMeter Test'
+      workingDirectory: $(Agent.TempDirectory)
+    - bash: 'rm -rf /data'
+      displayName: 'Bash Script: Run jMeter Test'
+      workingDirectory: $(Agent.TempDirectory)
+    - bash: 'pwd'
+      displayName: 'Bash Script: Run jMeter Test'
+      workingDirectory: $(Agent.TempDirectory)
