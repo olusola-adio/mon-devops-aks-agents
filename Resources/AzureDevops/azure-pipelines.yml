@@ -167,7 +167,7 @@ stages:
     condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/pull/')))
     displayName: Deploy DEV Job
     pool:
-      vmImage: $(vmImageName)
+      vmImage:  vs2017-win2016 
     environment: 'dev.dev'
     strategy:
       runOnce:
@@ -178,7 +178,7 @@ stages:
             displayName: 'Tokenization: transform file mon-devops-aks-agent.yml'
             inputs:
               SourcePath: $(Pipeline.Workspace)/manifests/
-              TargetFileNames: akscalculator2.yml
+              TargetFileNames: mon-devops-aks-agent.yml
                             
           - task: Kubernetes@1
             displayName: kubectl create pat token secret
@@ -204,3 +204,19 @@ stages:
             inputs:
               SourceFolder: $(Pipeline.Workspace)/manifests/
               Contents: mon-devops-aks-agent.yml
+
+  - job: BashJob
+    dependsOn: DeployDEVJob
+    condition: succeeded()
+    pool:
+      name: 'my-new-pool'
+    steps:
+    - bash: 'ls -l /data'
+      displayName: 'Bash Script: Run jMeter Test'
+      workingDirectory: $(Agent.TempDirectory)
+    - bash: 'rm -rf /data'
+      displayName: 'Bash Script: Run jMeter Test'
+      workingDirectory: $(Agent.TempDirectory)
+    - bash: 'pwd'
+      displayName: 'Bash Script: Run jMeter Test'
+      workingDirectory: $(Agent.TempDirectory)

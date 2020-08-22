@@ -44,14 +44,3 @@ spec:
       - name: docker-graph-storage
         hostPath:
             path: /var/run/docker.sock
----
-apiVersion: v1
-kind: Service
-metadata:
-    name: mon-devops-aks-agent
-spec:
-    type: LoadBalancer
-    ports:
-    - port: 80 
-    selector:
-        app: mon-devops-aks-agent
