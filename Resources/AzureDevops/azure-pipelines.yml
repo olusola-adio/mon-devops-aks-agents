@@ -110,7 +110,7 @@ stages:
               Contents:  mon-devops-aks-agent.yml
       
   - job: BashJob
-    dependsOn: CleanUp
+    dependsOn: DeployPullRequest
     condition: succeeded()
     pool:
       name: 'my-new-pool'
