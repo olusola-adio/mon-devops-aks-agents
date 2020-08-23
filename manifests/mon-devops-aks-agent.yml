@@ -20,11 +20,11 @@ spec:
           - containerPort: 80
           resources:
             requests:
-              cpu: 500m
-              memory: "500m"
+              cpu: "200m"
+              memory: "500Mi"
             limits:
-              cpu: 1G
-              memory: "1G"
+              cpu: "400m"
+              memory: "1000Mi"
           env:
           - name: AZP_POOL
             value: 'my-new-pool'
