@@ -42,8 +42,7 @@ stages:
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-          $(tag)
-          
+          $(tag) 
     - upload: manifests
       artifact: manifests
 
@@ -70,13 +69,11 @@ stages:
         deploy:
           steps:
           - reviewApp: dev
-          
           - task: Tokenization@2            
             displayName: 'Tokenization: transform file mon-devops-aks-agent.yml'
             inputs:
               SourcePath: $(Pipeline.Workspace)/manifests/
-              TargetFileNames: mon-devops-aks-agent.yml
-              
+              TargetFileNames: mon-devops-aks-agent.yml            
           - task: Kubernetes@1
             displayName: 'Create a new namespace for the pull request'
             inputs:
@@ -84,8 +81,7 @@ stages:
               kubernetesServiceEndpoint: 'AksCalculatorDemo'
               command: apply
               useConfigurationFile: true
-              inline: '{ "kind": "Namespace", "apiVersion": "v1", "metadata": { "name": "$(k8sNamespaceForPR)" }}'
-              
+              inline: '{ "kind": "Namespace", "apiVersion": "v1", "metadata": { "name": "$(k8sNamespaceForPR)" }}'          
           # Create PAT token secret
           - task: Kubernetes@1
             displayName: kubectl create pat token secret
@@ -107,43 +103,15 @@ stages:
               manifests: |
                 $(Pipeline.Workspace)/manifests/mon-devops-aks-agent.yml
               containers: |
-                $(containerRegistry)/$(imageRepository):$(tag)
-                    
-  - job: CleanUp
-    dependsOn: DeployPullRequest
-    condition: always()
-    pool:
-      vmImage:  $(vmImageName)
-    steps:
-    - task: DeleteFiles@1
-      displayName: 'Delete tokenised file'
-      inputs:
-        SourceFolder: $(Pipeline.Workspace)/manifests/
-        Contents:  mon-devops-aks-agent.yml
-    - task: Kubernetes@1
-      name: get
-      displayName: 'Get services in the new namespace'
-      continueOnError: true
-      inputs:
-        command: get
-        connectionType: 'Kubernetes Service Connection'
-        kubernetesServiceEndpoint: 'AksCalculatorDemo'
-        namespace: $(k8sNamespaceForPR)
-        arguments: svc
-        outputFormat: jsonpath=http://{.items[0].status.loadBalancer.ingress[0].ip}:{.items[0].spec.ports[0].port}
-          
-      # Getting the IP of the deployed service and writing it to a variable for posing comment
-    - script: |
-        url="$(get.KubectlOutput)"
-        message="Your review app has been deployed"
-        if [ ! -z "$url" -a "$url" != "http://:" ] 
-        then
-          message="${message} and is available at $url.<br><br>[Learn More](https://aka.ms/testwithreviewapps) about how to test and provide feedback for the app."
-        fi
-        echo "##vso[task.setvariable variable=GITHUB_COMMENT]$message"
-
+                $(containerRegistry)/$(imageRepository):$(tag)                    
+          - task: DeleteFiles@1
+            displayName: 'Delete tokenised file'
+            inputs:
+              SourceFolder: $(Pipeline.Workspace)/manifests/
+              Contents:  mon-devops-aks-agent.yml
+      
   - job: BashJob
-    dependsOn: CleanUp
+    dependsOn: DeployPullRequest
     condition: succeeded()
     pool:
       name: 'my-new-pool'
