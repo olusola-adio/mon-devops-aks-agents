@@ -68,6 +68,7 @@ stages:
       runOnce:
         deploy:
           steps:
+          - reviewApp: dev
           - task: Tokenization@2            
             displayName: 'Tokenization: transform file mon-devops-aks-agent.yml'
             inputs:
