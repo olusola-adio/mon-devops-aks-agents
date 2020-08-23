@@ -66,9 +66,6 @@ FROM microsoft/vsts-agent
 
 ENV DOCKER_VERSION="18.03.1-ce"
 
-# Insntall NPM Package
-RUN sudo npm install -g eslint @vue/cli @vue/eslint-config-standard
-
 # add docker CLI
 RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz | \
     tar zxvf - --strip 1 -C /usr/bin docker/docker
