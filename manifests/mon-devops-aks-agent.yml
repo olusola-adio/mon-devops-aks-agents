@@ -27,7 +27,7 @@ spec:
               memory: "300Mi"
           env:
           - name: AZP_POOL
-            value: 'my-new-pool'
+            value: 'MON - Docker'
           - name: AZP_TOKEN
             valueFrom: 
               secretKeyRef:
