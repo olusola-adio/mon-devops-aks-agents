@@ -181,7 +181,7 @@ stages:
     dependsOn: DeployDEVJob
     condition: succeeded()
     pool:
-      name: 'my-new-pool'
+      name: 'MON - Docker'
     steps:
     - bash: 'ls -l /data'
       displayName: 'Bash Script: Run jMeter Test'
